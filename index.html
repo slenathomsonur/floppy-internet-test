@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dem Internet Speed Test - Macintosh Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=San+Francisco&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'San Francisco', 'Chicago', 'Monaco', sans-serif;
+            cursor: default;
+            user-select: none;
+        }
+        
+        body {
+            background: #8B8B8B;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 20%);
+            pointer-events: none;
+        }
+        
+        .desktop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #8B8B8B;
+            z-index: -1;
+        }
+        
+        .window {
+            background: #C0C0C0;
+            border: 2px solid;
+            border-top-color: #FFFFFF;
+            border-left-color: #FFFFFF;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .title-bar {
+            background: linear-gradient(90deg, #000080, #1084D0);
+            color: white;
+            padding: 4px 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+        
+        .title-text {
+            font-weight: bold;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .control {
+            width: 16px;
+            height: 14px;
+            font-size: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #C0C0C0;
+            color: black;
+            border: 1px solid;
+            border-top-color: #FFFFFF;
+            border-left-color: #FFFFFF;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            cursor: pointer;
+        }
+        
+        .content {
+            padding: 15px;
+            background: #C0C0C0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #808080;
+        }
+        
+        h1 {
+            font-size: 20px;
+            color: #000080;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #404040;
+        }
+        
+        .test-area {
+            margin: 20px 0;
+        }
+        
+        .button {
+            background: #C0C0C0;
+            border: 2px solid;
+            border-top-color: #FFFFFF;
+            border-left-color: #FFFFFF;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 5px;
+            outline: none;
+        }
+        
+        .button:hover {
+            background: #D0D0D0;
+        }
+        
+        .button:active {
+            border-top-color: #808080;
+            border-left-color: #808080;
+            border-right-color: #FFFFFF;
+            border-bottom-color: #FFFFFF;
+        }
+        
+        .button:disabled {
+            color: #808080;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            background: #FFFFFF;
+            border: 1px solid #808080;
+            font-size: 12px;
+            min-height: 20px;
+        }
+        
+        .results {
+            display: none;
+            margin-top: 20px;
+            background: #FFFFFF;
+            border: 1px solid #808080;
+            padding: 15px;
+        }
+        
+        .result-item {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        
+        .result-label {
+            font-weight: bold;
+            color: #000080;
+        }
+        
+        .progress-container {
+            height: 20px;
+            background: #FFFFFF;
+            border: 1px solid #808080;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #000080;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            line-height: 20px;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+        }
+        
+        .footer {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #404040;
+            text-align: center;
+            padding-top: 10px;
+            border-top: 1px solid #808080;
+        }
+        
+        .menu-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #C0C0C0;
+            border-bottom: 1px solid #808080;
+            padding: 2px 5px;
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            z-index: 100;
+        }
+        
+        .menu-item {
+            padding: 2px 10px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .menu-item:hover {
+            background: #000080;
+            color: white;
+        }
+        
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #C0C0C0;
+            border: 1px solid #808080;
+            min-width: 150px;
+            z-index: 1000;
+        }
+        
+        .dropdown-item {
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #808080;
+        }
+        
+        .dropdown-item:hover {
+            background: #000080;
+            color: white;
+        }
+        
+        .menu-item:hover .dropdown {
+            display: block;
+        }
+        
+        .desktop-icon {
+            position: fixed;
+            width: 60px;
+            text-align: center;
+            font-size: 12px;
+            color: white;
+            text-shadow: 1px 1px 1px black;
+            cursor: pointer;
+            z-index: 5;
+            transition: transform 0.3s;
+        }
+        
+        #speedTestIcon {
+            bottom: 30px;
+            right: 30px;
+        }
+        
+        #appStoreIcon {
+            bottom: 100px;
+            right: 30px;
+        }
+        
+        #recentlyDeletedIcon {
+            bottom: 170px;
+            right: 30px;
+        }
+        
+        #speedtestNetIcon {
+            bottom: 240px;
+            right: 30px;
+            display: none;
+        }
+        
+        #fastComIcon {
+            bottom: 310px;
+            right: 30px;
+            display: none;
+        }
+        
+        #googleFiberIcon {
+            bottom: 380px;
+            right: 30px;
+            display: none;
+        }
+        
+        .desktop-icon.dragging {
+            opacity: 0.7;
+        }
+        
+        .icon-image {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 5px;
+            background: #C0C0C0;
+            border: 1px solid white;
+            box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+        }
+        
+        .trash-icon {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            text-align: center;
+            font-size: 12px;
+            color: white;
+            text-shadow: 1px 1px 1px black;
+            z-index: 5;
+        }
+        
+        .trash-image {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 5px;
+            background: #C0C0C0;
+            border: 1px solid white;
+            box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .trash-image::before {
+            content: "";
+            position: absolute;
+            top: -3px;
+            left: 5px;
+            width: 22px;
+            height: 3px;
+            background: #C0C0C0;
+            border: 1px solid #808080;
+        }
+        
+        .trash-image::after {
+            content: "";
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            width: 12px;
+            height: 2px;
+            background: #808080;
+        }
+        
+        .dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #C0C0C0;
+            border: 2px solid;
+            border-top-color: #FFFFFF;
+            border-left-color: #FFFFFF;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 0;
+            z-index: 1000;
+        }
+        
+        .dialog-title {
+            background: linear-gradient(90deg, #000080, #1084D0);
+            color: white;
+            padding: 4px 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dialog-content {
+            padding: 15px;
+            font-size: 12px;
+        }
+        
+        .dialog-buttons {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .history-panel {
+            display: none;
+            margin-top: 15px;
+            background: #FFFFFF;
+            border: 1px solid #808080;
+            padding: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            font-size: 11px;
+            padding: 3px 0;
+            border-bottom: 1px dotted #C0C0C0;
+        }
+        
+        .recovery-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #C0C0C0;
+            border: 2px solid;
+            border-top-color: #FFFFFF;
+            border-left-color: #FFFFFF;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 0;
+            z-index: 1001;
+            width: 350px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 5px;
+            margin: 10px 0;
+            border: 1px solid #808080;
+            background: white;
+            font-size: 12px;
+        }
+        
+        .trash-full {
+            background: #FF0000 !important;
+        }
+        
+        .deleted-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #C0C0C0;
+            border: 2px solid;
+            border-top-color: #FFFFFF;
+            border-left-color: #FFFFFF;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 20px;
+            z-index: 1002;
+            text-align: center;
+            display: none;
+        }
+        
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+            border: 1px solid #808080;
+            background: white;
+            padding: 5px;
+        }
+        
+        .file-item {
+            padding: 5px;
+            border-bottom: 1px solid #C0C0C0;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .file-action {
+            background: #C0C0C0;
+            border: 1px solid #808080;
+            padding: 2px 5px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        
+        .app-store {
+            width: 500px;
+        }
+        
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .app-item {
+            background: #FFFFFF;
+            border: 1px solid #808080;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .app-item:hover {
+            background: #E0E0E0;
+        }
+        
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 5px;
+            background: #C0C0C0;
+            border: 1px solid #808080;
+        }
+        
+        .app-name {
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .app-desc {
+            font-size: 10px;
+            color: #404040;
+            margin-top: 3px;
+        }
+        
+        .deletion-reason-dialog {
+            width: 400px;
+        }
+        
+        .reason-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .deletion-item {
+            padding: 8px;
+            border-bottom: 1px solid #C0C0C0;
+            font-size: 11px;
+        }
+        
+        .deletion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .deletion-date {
+            font-weight: bold;
+            color: #000080;
+        }
+        
+        .deletion-reason {
+            margin-top: 3px;
+            color: #404040;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 5px;
+            border: 1px solid #808080;
+            background: white;
+            font-size: 12px;
+            resize: none;
+        }
+        
+        .speed-test-app {
+            width: 600px;
+            display: none;
+        }
+        
+        .speed-test-content {
+            background: white;
+            border: 1px solid #808080;
+            padding: 20px;
+            min-height: 300px;
+        }
+        
+        .speed-test-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .speed-test-results {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .speed-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #000080;
+            margin: 10px 0;
+        }
+        
+        .speed-label {
+            font-size: 14px;
+            color: #404040;
+        }
+        
+        .test-button {
+            background: #000080;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        
+        .test-button:hover {
+            background: #1084D0;
+        }
+        
+        .test-button:disabled {
+            background: #808080;
+            cursor: not-allowed;
+        }
+        
+        .app-progress {
+            height: 10px;
+            background: #C0C0C0;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-progress-bar {
+            height: 100%;
+            background: #000080;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .recovery-app-dialog {
+            width: 400px;
+        }
+        
+        .recovery-app-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+            border: 1px solid #808080;
+            background: white;
+            padding: 5px;
+        }
+        
+        .recovery-app-item {
+            padding: 8px;
+            border-bottom: 1px solid #C0C0C0;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .recovery-app-item:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 600px) {
+            .window {
+                max-width: 95%;
+            }
+            
+            h1 {
+                font-size: 18px;
+            }
+            
+            .app-store {
+                width: 95%;
+            }
+            
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .speed-test-app {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop"></div>
+    
+    <div class="menu-bar">
+        <div class="menu-item">File
+            <div class="dropdown">
+                <div class="dropdown-item" id="viewDownloads">View Downloads</div>
+                <div class="dropdown-item" id="saveResults">Save Results</div>
+                <div class="dropdown-item" id="shareResults">Share Results</div>
+            </div>
+        </div>
+        <div class="menu-item">Edit</div>
+        <div class="menu-item">Test</div>
+        <div class="menu-item">Results</div>
+        <div class="menu-item">Help</div>
+    </div>
+    
+    <!-- Main Speed Test Window -->
+    <div class="window" id="mainWindow">
+        <div class="title-bar" id="windowTitle">
+            <div class="title-text">Dem Internet Speed Test</div>
+            <div class="window-controls">
+                <div class="control">-</div>
+                <div class="control">□</div>
+                <div class="control" id="closeButton">×</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="header">
+                <h1>Dem Internet Speed Test</h1>
+                <p class="subtitle">Macintosh System 7 Edition</p>
+            </div>
+            
+            <div class="test-area">
+                <button id="startTest" class="button">Start Speed Test</button>
+                <button id="historyBtn" class="button">View History</button>
+                
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                    <div class="progress-text" id="progressText">System Ready</div>
+                </div>
+                
+                <div id="status" class="status">System ready. Click "Start Speed Test" to begin.</div>
+                
+                <div id="results" class="results">
+                    <h2>Test Results</h2>
+                    <div class="result-item">
+                        <span class="result-label">Download Speed:</span>
+                        <span id="downloadSpeed">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Upload Speed:</span>
+                        <span id="uploadSpeed">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Ping:</span>
+                        <span id="ping">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">IP Address:</span>
+                        <span id="ipAddress">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">ISP:</span>
+                        <span id="isp">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Test Date:</span>
+                        <span id="testDate">--</span>
+                    </div>
+                    
+                    <div class="dialog-buttons">
+                        <button id="downloadBtn" class="button">Save Results</button>
+                        <button id="shareBtn" class="button">Share Results</button>
+                    </div>
+                </div>
+                
+                <div id="historyPanel" class="history-panel">
+                    <h3>Test History</h3>
+                    <div id="historyList"></div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Dem Internet Speed Test v2.0 • Macintosh System 7 Compatible</p>
+                <p>© 1994 Dem Software, Inc. All rights reserved.</p>
+                <p>Auto-save: <span id="saveStatus">Enabled</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- App Store Window -->
+    <div class="window app-store" id="appStoreWindow" style="display: none;">
+        <div class="title-bar">
+            <div class="title-text">App Store</div>
+            <div class="window-controls">
+                <div class="control">-</div>
+                <div class="control">□</div>
+                <div class="control" id="closeAppStore">×</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="header">
+                <h1>App Store</h1>
+                <p class="subtitle">Download Internet Speed Testing Applications</p>
+            </div>
+            
+            <div class="app-grid">
+                <div class="app-item" data-app="speedtestNet">
+                    <div class="app-icon"></div>
+                    <div class="app-name">Speedtest.net</div>
+                    <div class="app-desc">Official Ookla speed test with global servers</div>
+                </div>
+                <div class="app-item" data-app="fastCom">
+                    <div class="app-icon"></div>
+                    <div class="app-name">Fast.com</div>
+                    <div class="app-desc">Netflix's simple and fast speed test</div>
+                </div>
+                <div class="app-item" data-app="googleFiber">
+                    <div class="app-icon"></div>
+                    <div class="app-name">Google Fiber Test</div>
+                    <div class="app-desc">Google's advanced fiber speed test</div>
+                </div>
+                <div class="app-item" data-app="networkMonitor">
+                    <div class="app-icon"></div>
+                    <div class="app-name">Network Monitor</div>
+                    <div class="app-desc">Real-time network performance monitoring</div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>App Store v1.0 • All apps are free to download</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recently Deleted Window -->
+    <div class="window" id="recentlyDeletedWindow" style="display: none; width: 500px;">
+        <div class="title-bar">
+            <div class="title-text">Recently Deleted</div>
+            <div class="window-controls">
+                <div class="control">-</div>
+                <div class="control">□</div>
+                <div class="control" id="closeRecentlyDeleted">×</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="header">
+                <h1>Recently Deleted Applications</h1>
+                <p class="subtitle">View deletion history and recovery options</p>
+            </div>
+            
+            <div class="reason-list" id="deletionList">
+                <!-- Deletion history will be populated here -->
+            </div>
+            
+            <div class="dialog-buttons">
+                <button id="recoverAppsBtn" class="button">Recover Apps</button>
+            </div>
+            
+            <div class="footer">
+                <p>Items are permanently deleted after 30 days</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Speed Test App Windows -->
+    <div class="window speed-test-app" id="speedtestNetWindow">
+        <div class="title-bar">
+            <div class="title-text">Speedtest.net</div>
+            <div class="window-controls">
+                <div class="control">-</div>
+                <div class="control">□</div>
+                <div class="control" id="closeSpeedtestNet">×</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="speed-test-header">
+                <h2>Speedtest.net</h2>
+                <p>Official Ookla Speed Test</p>
+            </div>
+            <div class="speed-test-content">
+                <p>Test your internet connection speed with the official Ookla speed test.</p>
+                <button id="startSpeedtestNet" class="test-button">Start Speed Test</button>
+                <div class="app-progress">
+                    <div id="speedtestNetProgress" class="app-progress-bar"></div>
+                </div>
+                <div id="speedtestNetResults" class="speed-test-results">
+                    <div class="speed-value" id="speedtestNetDownload">-- Mbps</div>
+                    <div class="speed-label">Download Speed</div>
+                    <div class="speed-value" id="speedtestNetUpload">-- Mbps</div>
+                    <div class="speed-label">Upload Speed</div>
+                    <div class="speed-value" id="speedtestNetPing">-- ms</div>
+                    <div class="speed-label">Ping</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="window speed-test-app" id="fastComWindow">
+        <div class="title-bar">
+            <div class="title-text">Fast.com</div>
+            <div class="window-controls">
+                <div class="control">-</div>
+                <div class="control">□</div>
+                <div class="control" id="closeFastCom">×</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="speed-test-header">
+                <h2>Fast.com</h2>
+                <p>Netflix Internet Speed Test</p>
+            </div>
+            <div class="speed-test-content">
+                <p>Simple and fast internet speed test powered by Netflix.</p>
+                <button id="startFastCom" class="test-button">Start Speed Test</button>
+                <div class="app-progress">
+                    <div id="fastComProgress" class="app-progress-bar"></div>
+                </div>
+                <div id="fastComResults" class="speed-test-results">
+                    <div class="speed-value" id="fastComDownload">-- Mbps</div>
+                    <div class="speed-label">Download Speed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="window speed-test-app" id="googleFiberWindow">
+        <div class="title-bar">
+            <div class="title-text">Google Fiber Speed Test</div>
+            <div class="window-controls">
+                <div class="control">-</div>
+                <div class="control">□</div>
+                <div class="control" id="closeGoogleFiber">×</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="speed-test-header">
+                <h2>Google Fiber Speed Test</h2>
+                <p>Advanced Fiber Internet Testing</p>
+            </div>
+            <div class="speed-test-content">
+                <p>Test your fiber internet connection with Google's advanced speed test.</p>
+                <button id="startGoogleFiber" class="test-button">Start Speed Test</button>
+                <div class="app-progress">
+                    <div id="googleFiberProgress" class="app-progress-bar"></div>
+                </div>
+                <div id="googleFiberResults" class="speed-test-results">
+                    <div class="speed-value" id="googleFiberDownload">-- Mbps</div>
+                    <div class="speed-label">Download Speed</div>
+                    <div class="speed-value" id="googleFiberUpload">-- Mbps</div>
+                    <div class="speed-label">Upload Speed</div>
+                    <div class="speed-value" id="googleFiberLatency">-- ms</div>
+                    <div class="speed-label">Latency</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Desktop Icons -->
+    <div class="desktop-icon" id="speedTestIcon" draggable="true">
+        <div class="icon-image"></div>
+        <div>Speed Test</div>
+    </div>
+    
+    <div class="desktop-icon" id="appStoreIcon" draggable="true">
+        <div class="icon-image"></div>
+        <div>App Store</div>
+    </div>
+    
+    <div class="desktop-icon" id="recentlyDeletedIcon" draggable="true">
+        <div class="icon-image"></div>
+        <div>Recently Deleted</div>
+    </div>
+    
+    <!-- Downloaded App Icons -->
+    <div class="desktop-icon" id="speedtestNetIcon" draggable="true">
+        <div class="icon-image"></div>
+        <div>Speedtest.net</div>
+    </div>
+    
+    <div class="desktop-icon" id="fastComIcon" draggable="true">
+        <div class="icon-image"></div>
+        <div>Fast.com</div>
+    </div>
+    
+    <div class="desktop-icon" id="googleFiberIcon" draggable="true">
+        <div class="icon-image"></div>
+        <div>Google Fiber</div>
+    </div>
+    
+    <div class="trash-icon" id="trashIcon">
+        <div class="trash-image" id="trashImage"></div>
+        <div>Trash</div>
+    </div>
+    
+    <!-- Dialogs -->
+    <div id="aboutDialog" class="dialog">
+        <div class="dialog-title">
+            <div>About Dem Internet Speed Test</div>
+            <div class="window-controls">
+                <div class="control" id="closeAbout">×</div>
+            </div>
+        </div>
+        <div class="dialog-content">
+            <p><strong>Dem Internet Speed Test v2.0</strong></p>
+            <p>Macintosh System 7 Edition</p>
+            <p>© 1994 Dem Software, Inc.</p>
+            <p>All rights reserved.</p>
+            <div class="dialog-buttons">
+                <button class="button" id="okAbout">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="downloadsDialog" class="dialog" style="width: 450px;">
+        <div class="dialog-title">
+            <div>Downloaded Files</div>
+            <div class="window-controls">
+                <div class="control" id="closeDownloads">×</div>
+            </div>
+        </div>
+        <div class="dialog-content">
+            <p>Your downloaded speed test results:</p>
+            <div class="file-list" id="downloadList">
+                <!-- Downloaded files will be listed here -->
+            </div>
+            <div class="dialog-buttons">
+                <button class="button" id="closeDownloadsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="recoveryDialog" class="recovery-dialog">
+        <div class="dialog-title">
+            <div>Application Recovery</div>
+            <div class="window-controls">
+                <div class="control" id="closeRecovery">×</div>
+            </div>
+        </div>
+        <div class="dialog-content">
+            <p>The application has been moved to Trash.</p>
+            <p>Enter recovery password to restore:</p>
+            <input type="password" id="recoveryPassword" class="input-field" placeholder="Enter recovery password">
+            <div class="dialog-buttons">
+                <button class="button" id="submitRecovery">Restore Application</button>
+                <button class="button" id="cancelRecovery">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="deletionReasonDialog" class="dialog deletion-reason-dialog">
+        <div class="dialog-title">
+            <div>Delete Application</div>
+            <div class="window-controls">
+                <div class="control" id="closeDeletionReason">×</div>
+            </div>
+        </div>
+        <div class="dialog-content">
+            <p>Please provide a reason for deleting this application:</p>
+            <textarea id="deletionReason" placeholder="Enter reason for deletion..."></textarea>
+            <div class="dialog-buttons">
+                <button class="button" id="confirmDeletion">Delete</button>
+                <button class="button" id="cancelDeletion">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="recoveryAppDialog" class="dialog recovery-app-dialog">
+        <div class="dialog-title">
+            <div>Recover Deleted Applications</div>
+            <div class="window-controls">
+                <div class="control" id="closeRecoveryApp">×</div>
+            </div>
+        </div>
+        <div class="dialog-content">
+            <p>Enter recovery password to restore deleted applications:</p>
+            <input type="password" id="recoveryAppPassword" class="input-field" placeholder="Enter recovery password">
+            <p>Select apps to recover:</p>
+            <div class="recovery-app-list" id="recoveryAppList">
+                <!-- Deleted apps will be listed here -->
+            </div>
+            <div class="dialog-buttons">
+                <button class="button" id="submitRecoveryApp">Recover Selected</button>
+                <button class="button" id="cancelRecoveryApp">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="deletedMessage" class="deleted-message">
+        <h3>Application Deleted</h3>
+        <p>The application has been moved to Trash.</p>
+        <p>Close this tab to continue.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const startTestBtn = document.getElementById('startTest');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const shareBtn = document.getElementById('shareBtn');
+            const historyBtn = document.getElementById('historyBtn');
+            const closeAbout = document.getElementById('closeAbout');
+            const okAbout = document.getElementById('okAbout');
+            const closeButton = document.getElementById('closeButton');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+            const historyPanel = document.getElementById('historyPanel');
+            const aboutDialog = document.getElementById('aboutDialog');
+            const speedTestIcon = document.getElementById('speedTestIcon');
+            const appStoreIcon = document.getElementById('appStoreIcon');
+            const recentlyDeletedIcon = document.getElementById('recentlyDeletedIcon');
+            const speedtestNetIcon = document.getElementById('speedtestNetIcon');
+            const fastComIcon = document.getElementById('fastComIcon');
+            const googleFiberIcon = document.getElementById('googleFiberIcon');
+            const trashIcon = document.getElementById('trashIcon');
+            const trashImage = document.getElementById('trashImage');
+            const recoveryDialog = document.getElementById('recoveryDialog');
+            const closeRecovery = document.getElementById('closeRecovery');
+            const cancelRecovery = document.getElementById('cancelRecovery');
+            const submitRecovery = document.getElementById('submitRecovery');
+            const recoveryPassword = document.getElementById('recoveryPassword');
+            const deletedMessage = document.getElementById('deletedMessage');
+            const saveStatus = document.getElementById('saveStatus');
+            const mainWindow = document.getElementById('mainWindow');
+            const appStoreWindow = document.getElementById('appStoreWindow');
+            const recentlyDeletedWindow = document.getElementById('recentlyDeletedWindow');
+            const closeAppStore = document.getElementById('closeAppStore');
+            const closeRecentlyDeleted = document.getElementById('closeRecentlyDeleted');
+            const viewDownloads = document.getElementById('viewDownloads');
+            const downloadsDialog = document.getElementById('downloadsDialog');
+            const closeDownloads = document.getElementById('closeDownloads');
+            const closeDownloadsBtn = document.getElementById('closeDownloadsBtn');
+            const downloadList = document.getElementById('downloadList');
+            const deletionReasonDialog = document.getElementById('deletionReasonDialog');
+            const closeDeletionReason = document.getElementById('closeDeletionReason');
+            const confirmDeletion = document.getElementById('confirmDeletion');
+            const cancelDeletion = document.getElementById('cancelDeletion');
+            const deletionReason = document.getElementById('deletionReason');
+            const deletionList = document.getElementById('deletionList');
+            const appItems = document.querySelectorAll('.app-item');
+            const speedtestNetWindow = document.getElementById('speedtestNetWindow');
+            const fastComWindow = document.getElementById('fastComWindow');
+            const googleFiberWindow = document.getElementById('googleFiberWindow');
+            const closeSpeedtestNet = document.getElementById('closeSpeedtestNet');
+            const closeFastCom = document.getElementById('closeFastCom');
+            const closeGoogleFiber = document.getElementById('closeGoogleFiber');
+            const startSpeedtestNet = document.getElementById('startSpeedtestNet');
+            const startFastCom = document.getElementById('startFastCom');
+            const startGoogleFiber = document.getElementById('startGoogleFiber');
+            const recoverAppsBtn = document.getElementById('recoverAppsBtn');
+            const recoveryAppDialog = document.getElementById('recoveryAppDialog');
+            const closeRecoveryApp = document.getElementById('closeRecoveryApp');
+            const submitRecoveryApp = document.getElementById('submitRecoveryApp');
+            const cancelRecoveryApp = document.getElementById('cancelRecoveryApp');
+            const recoveryAppPassword = document.getElementById('recoveryAppPassword');
+            const recoveryAppList = document.getElementById('recoveryAppList');
+            
+            // Result elements
+            const downloadSpeedEl = document.getElementById('downloadSpeed');
+            const uploadSpeedEl = document.getElementById('uploadSpeed');
+            const pingEl = document.getElementById('ping');
+            const ipAddressEl = document.getElementById('ipAddress');
+            const ispEl = document.getElementById('isp');
+            const testDateEl = document.getElementById('testDate');
+            
+            // Application state
+            let testInProgress = false;
+            let testResults = {};
+            let testHistory = [];
+            let appDeleted = false;
+            let autoSaveInterval;
+            let isDragging = false;
+            let dragOffsetX, dragOffsetY;
+            let currentDraggingApp = null;
+            let downloadedFiles = [];
+            let deletionHistory = [];
+            let downloadedApps = {
+                speedtestNet: false,
+                fastCom: false,
+                googleFiber: false
+            };
+            let deletedApps = [];
+            
+            // Recovery password
+            const RECOVERY_PASSWORD = "internetspeed";
+            
+            // Initialize from localStorage
+            function initializeFromStorage() {
+                const savedData = localStorage.getItem('demInternetSpeedTest');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    testHistory = data.testHistory || [];
+                    testResults = data.testResults || {};
+                    downloadedFiles = data.downloadedFiles || [];
+                    deletionHistory = data.deletionHistory || [];
+                    downloadedApps = data.downloadedApps || {
+                        speedtestNet: false,
+                        fastCom: false,
+                        googleFiber: false
+                    };
+                    deletedApps = data.deletedApps || [];
+                    
+                    // Show downloaded apps
+                    updateAppIcons();
+                    
+                    if (data.appDeleted) {
+                        appDeleted = true;
+                        mainWindow.style.display = 'none';
+                        speedTestIcon.style.display = 'none';
+                        recoveryDialog.style.display = 'block';
+                    }
+                }
+                
+                // Start auto-save
+                startAutoSave();
+            }
+            
+            // Update app icons based on current state
+            function updateAppIcons() {
+                speedtestNetIcon.style.display = downloadedApps.speedtestNet ? 'block' : 'none';
+                fastComIcon.style.display = downloadedApps.fastCom ? 'block' : 'none';
+                googleFiberIcon.style.display = downloadedApps.googleFiber ? 'block' : 'none';
+                
+                // Hide any apps that are in the deleted list
+                deletedApps.forEach(appId => {
+                    const icon = document.getElementById(appId);
+                    if (icon) {
+                        icon.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Start auto-saving every 30 seconds
+            function startAutoSave() {
+                autoSaveInterval = setInterval(saveToStorage, 30000);
+            }
+            
+            // Save data to localStorage
+            function saveToStorage() {
+                const data = {
+                    testHistory,
+                    testResults,
+                    downloadedFiles,
+                    deletionHistory,
+                    downloadedApps,
+                    deletedApps,
+                    appDeleted,
+                    lastSave: new Date().toISOString()
+                };
+                localStorage.setItem('demInternetSpeedTest', JSON.stringify(data));
+                
+                // Update save status
+                const now = new Date();
+                saveStatus.textContent = `Last saved: ${now.toLocaleTimeString()}`;
+                
+                // Flash save indicator
+                saveStatus.style.color = '#000080';
+                setTimeout(() => {
+                    saveStatus.style.color = '#404040';
+                }, 1000);
+            }
+            
+            // Menu bar interactions
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('menu-item')) {
+                        const menuText = this.textContent.trim();
+                        if (menuText === 'Help') {
+                            aboutDialog.style.display = 'block';
+                        } else if (menuText === 'Results') {
+                            historyPanel.style.display = historyPanel.style.display === 'block' ? 'none' : 'block';
+                            updateHistoryDisplay();
+                        } else if (menuText === 'File') {
+                            // Dropdown will handle this
+                        }
+                    }
+                });
+            });
+            
+            // File menu dropdown items
+            viewDownloads.addEventListener('click', function() {
+                updateDownloadsList();
+                downloadsDialog.style.display = 'block';
+            });
+            
+            // Close about dialog
+            closeAbout.addEventListener('click', function() {
+                aboutDialog.style.display = 'none';
+            });
+            
+            okAbout.addEventListener('click', function() {
+                aboutDialog.style.display = 'none';
+            });
+            
+            // Close window buttons
+            closeButton.addEventListener('click', function() {
+                if (!appDeleted) {
+                    mainWindow.style.display = 'none';
+                    speedTestIcon.style.display = 'block';
+                }
+            });
+            
+            closeAppStore.addEventListener('click', function() {
+                appStoreWindow.style.display = 'none';
+                appStoreIcon.style.display = 'block';
+            });
+            
+            closeRecentlyDeleted.addEventListener('click', function() {
+                recentlyDeletedWindow.style.display = 'none';
+                recentlyDeletedIcon.style.display = 'block';
+            });
+            
+            // Close speed test app windows
+            closeSpeedtestNet.addEventListener('click', function() {
+                speedtestNetWindow.style.display = 'none';
+                speedtestNetIcon.style.display = 'block';
+            });
+            
+            closeFastCom.addEventListener('click', function() {
+                fastComWindow.style.display = 'none';
+                fastComIcon.style.display = 'block';
+            });
+            
+            closeGoogleFiber.addEventListener('click', function() {
+                googleFiberWindow.style.display = 'none';
+                googleFiberIcon.style.display = 'block';
+            });
+            
+            // Close downloads dialog
+            closeDownloads.addEventListener('click', function() {
+                downloadsDialog.style.display = 'none';
+            });
+            
+            closeDownloadsBtn.addEventListener('click', function() {
+                downloadsDialog.style.display = 'none';
+            });
+            
+            // Close recovery dialog
+            closeRecovery.addEventListener('click', function() {
+                recoveryDialog.style.display = 'none';
+            });
+            
+            cancelRecovery.addEventListener('click', function() {
+                recoveryDialog.style.display = 'none';
+            });
+            
+            // Close deletion reason dialog
+            closeDeletionReason.addEventListener('click', function() {
+                deletionReasonDialog.style.display = 'none';
+            });
+            
+            cancelDeletion.addEventListener('click', function() {
+                deletionReasonDialog.style.display = 'none';
+            });
+            
+            // Close recovery app dialog
+            closeRecoveryApp.addEventListener('click', function() {
+                recoveryAppDialog.style.display = 'none';
+            });
+            
+            cancelRecoveryApp.addEventListener('click', function() {
+                recoveryAppDialog.style.display = 'none';
+            });
+            
+            // Start the speed test
+            startTestBtn.addEventListener('click', startSpeedTest);
+            
+            // Download results
+            downloadBtn.addEventListener('click', downloadResults);
+            
+            // Share results
+            shareBtn.addEventListener('click', shareResults);
+            
+            // Toggle history panel
+            historyBtn.addEventListener('click', function() {
+                historyPanel.style.display = historyPanel.style.display === 'block' ? 'none' : 'block';
+                updateHistoryDisplay();
+            });
+            
+            // Recover apps button
+            recoverAppsBtn.addEventListener('click', function() {
+                showRecoveryAppDialog();
+            });
+            
+            // Desktop icon double-click handlers
+            speedTestIcon.addEventListener('dblclick', function() {
+                mainWindow.style.display = 'block';
+                speedTestIcon.style.display = 'none';
+            });
+            
+            appStoreIcon.addEventListener('dblclick', function() {
+                appStoreWindow.style.display = 'block';
+                appStoreIcon.style.display = 'none';
+            });
+            
+            recentlyDeletedIcon.addEventListener('dblclick', function() {
+                recentlyDeletedWindow.style.display = 'block';
+                recentlyDeletedIcon.style.display = 'none';
+                updateDeletionList();
+            });
+            
+            // Downloaded app double-click handlers
+            speedtestNetIcon.addEventListener('dblclick', function() {
+                speedtestNetWindow.style.display = 'block';
+                speedtestNetIcon.style.display = 'none';
+            });
+            
+            fastComIcon.addEventListener('dblclick', function() {
+                fastComWindow.style.display = 'block';
+                fastComIcon.style.display = 'none';
+            });
+            
+            googleFiberIcon.addEventListener('dblclick', function() {
+                googleFiberWindow.style.display = 'block';
+                googleFiberIcon.style.display = 'none';
+            });
+            
+            // App Store item clicks
+            appItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const appName = this.getAttribute('data-app');
+                    
+                    if (appName === 'speedtestNet') {
+                        downloadedApps.speedtestNet = true;
+                        // Remove from deleted apps if it was there
+                        deletedApps = deletedApps.filter(id => id !== 'speedtestNetIcon');
+                        updateAppIcons();
+                        statusEl.textContent = "Speedtest.net downloaded successfully!";
+                    } else if (appName === 'fastCom') {
+                        downloadedApps.fastCom = true;
+                        deletedApps = deletedApps.filter(id => id !== 'fastComIcon');
+                        updateAppIcons();
+                        statusEl.textContent = "Fast.com downloaded successfully!";
+                    } else if (appName === 'googleFiber') {
+                        downloadedApps.googleFiber = true;
+                        deletedApps = deletedApps.filter(id => id !== 'googleFiberIcon');
+                        updateAppIcons();
+                        statusEl.textContent = "Google Fiber Speed Test downloaded successfully!";
+                    } else {
+                        statusEl.textContent = `${appName} downloaded successfully!`;
+                    }
+                    
+                    saveToStorage();
+                });
+            });
+            
+            // Speed test app functionality
+            startSpeedtestNet.addEventListener('click', function() {
+                runSpeedtestNet();
+            });
+            
+            startFastCom.addEventListener('click', function() {
+                runFastCom();
+            });
+            
+            startGoogleFiber.addEventListener('click', function() {
+                runGoogleFiber();
+            });
+            
+            // Drag and drop functionality for all desktop icons
+            const desktopIcons = [
+                speedTestIcon, appStoreIcon, recentlyDeletedIcon, 
+                speedtestNetIcon, fastComIcon, googleFiberIcon
+            ];
+            
+            desktopIcons.forEach(icon => {
+                icon.addEventListener('dragstart', function(e) {
+                    isDragging = true;
+                    currentDraggingApp = this.id;
+                    this.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', this.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                
+                icon.addEventListener('dragend', function() {
+                    isDragging = false;
+                    this.classList.remove('dragging');
+                    
+                    // Check if icon is over trash
+                    const iconRect = this.getBoundingClientRect();
+                    const trashRect = trashIcon.getBoundingClientRect();
+                    
+                    if (
+                        iconRect.left < trashRect.right &&
+                        iconRect.right > trashRect.left &&
+                        iconRect.top < trashRect.bottom &&
+                        iconRect.bottom > trashRect.top
+                    ) {
+                        // Show deletion reason dialog
+                        deletionReasonDialog.style.display = 'block';
+                    }
+                });
+            });
+            
+            // Confirm deletion with reason
+            confirmDeletion.addEventListener('click', function() {
+                const reason = deletionReason.value.trim();
+                if (reason) {
+                    deleteApplication(currentDraggingApp, reason);
+                    deletionReasonDialog.style.display = 'none';
+                    deletionReason.value = '';
+                } else {
+                    alert('Please provide a reason for deletion.');
+                }
+            });
+            
+            trashIcon.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                trashImage.classList.add('trash-full');
+            });
+            
+            trashIcon.addEventListener('dragleave', function() {
+                trashImage.classList.remove('trash-full');
+            });
+            
+            trashIcon.addEventListener('drop', function(e) {
+                e.preventDefault();
+                trashImage.classList.remove('trash-full');
+            });
+            
+            // Submit recovery password for main app
+            submitRecovery.addEventListener('click', function() {
+                if (recoveryPassword.value === RECOVERY_PASSWORD) {
+                    // Restore application
+                    appDeleted = false;
+                    recoveryDialog.style.display = 'none';
+                    mainWindow.style.display = 'block';
+                    speedTestIcon.style.display = 'block';
+                    recoveryPassword.value = '';
+                    saveToStorage();
+                } else {
+                    alert("Incorrect recovery password. Try again.");
+                    recoveryPassword.value = '';
+                }
+            });
+            
+            // Submit recovery for multiple apps
+            submitRecoveryApp.addEventListener('click', function() {
+                if (recoveryAppPassword.value === RECOVERY_PASSWORD) {
+                    // Get selected apps to recover
+                    const checkboxes = recoveryAppList.querySelectorAll('input[type="checkbox"]:checked');
+                    checkboxes.forEach(checkbox => {
+                        const appId = checkbox.value;
+                        // Remove from deleted apps
+                        deletedApps = deletedApps.filter(id => id !== appId);
+                        // Show the app icon
+                        const icon = document.getElementById(appId);
+                        if (icon) {
+                            icon.style.display = 'block';
+                        }
+                    });
+                    
+                    recoveryAppDialog.style.display = 'none';
+                    recoveryAppPassword.value = '';
+                    updateDeletionList();
+                    saveToStorage();
+                } else {
+                    alert("Incorrect recovery password. Try again.");
+                    recoveryAppPassword.value = '';
+                }
+            });
+            
+            // Make windows draggable
+            const windows = [
+                mainWindow, appStoreWindow, recentlyDeletedWindow,
+                speedtestNetWindow, fastComWindow, googleFiberWindow
+            ];
+            
+            windows.forEach(window => {
+                const titleBar = window.querySelector('.title-bar');
+                if (titleBar) {
+                    titleBar.addEventListener('mousedown', function(e) {
+                        if (e.target === titleBar || e.target.classList.contains('title-text')) {
+                            dragOffsetX = e.clientX - window.getBoundingClientRect().left;
+                            dragOffsetY = e.clientY - window.getBoundingClientRect().top;
+                            
+                            document.addEventListener('mousemove', moveWindow);
+                            document.addEventListener('mouseup', stopMovingWindow);
+                            
+                            function moveWindow(e) {
+                                if (dragOffsetX !== undefined && dragOffsetY !== undefined) {
+                                    const x = e.clientX - dragOffsetX;
+                                    const y = e.clientY - dragOffsetY;
+                                    
+                                    // Keep window within bounds
+                                    const maxX = window.innerWidth - window.offsetWidth;
+                                    const maxY = window.innerHeight - window.offsetHeight;
+                                    
+                                    window.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+                                    window.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+                                    window.style.position = 'fixed';
+                                    window.style.transform = 'none';
+                                }
+                            }
+                            
+                            function stopMovingWindow() {
+                                dragOffsetX = undefined;
+                                dragOffsetY = undefined;
+                                document.removeEventListener('mousemove', moveWindow);
+                                document.removeEventListener('mouseup', stopMovingWindow);
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Delete application function
+            function deleteApplication(appId, reason) {
+                const appName = getAppName(appId);
+                
+                // Add to deletion history
+                deletionHistory.unshift({
+                    app: appName,
+                    date: new Date().toLocaleString(),
+                    reason: reason
+                });
+                
+                // Keep only last 10 deletions
+                if (deletionHistory.length > 10) {
+                    deletionHistory = deletionHistory.slice(0, 10);
+                }
+                
+                // Add to deleted apps list
+                if (!deletedApps.includes(appId)) {
+                    deletedApps.push(appId);
+                }
+                
+                // Hide the application
+                document.getElementById(appId).style.display = 'none';
+                
+                // Close any open windows for this app
+                if (appId === 'speedtestNetIcon') {
+                    speedtestNetWindow.style.display = 'none';
+                } else if (appId === 'fastComIcon') {
+                    fastComWindow.style.display = 'none';
+                } else if (appId === 'googleFiberIcon') {
+                    googleFiberWindow.style.display = 'none';
+                } else if (appId === 'appStoreIcon') {
+                    appStoreWindow.style.display = 'none';
+                } else if (appId === 'recentlyDeletedIcon') {
+                    recentlyDeletedWindow.style.display = 'none';
+                }
+                
+                if (appId === 'speedTestIcon') {
+                    appDeleted = true;
+                    mainWindow.style.display = 'none';
+                    deletedMessage.style.display = 'block';
+                    
+                    // Save deletion state
+                    saveToStorage();
+                    
+                    // Show recovery dialog after a delay
+                    setTimeout(() => {
+                        deletedMessage.style.display = 'none';
+                        recoveryDialog.style.display = 'block';
+                    }, 3000);
+                }
+                
+                saveToStorage();
+            }
+            
+            // Show recovery app dialog
+            function showRecoveryAppDialog() {
+                recoveryAppList.innerHTML = '';
+                
+                if (deletedApps.length === 0) {
+                    recoveryAppList.innerHTML = '<p>No apps available for recovery.</p>';
+                } else {
+                    deletedApps.forEach(appId => {
+                        const appName = getAppName(appId);
+                        const item = document.createElement('div');
+                        item.className = 'recovery-app-item';
+                        item.innerHTML = `
+                            <span>${appName}</span>
+                            <input type="checkbox" value="${appId}" checked>
+                        `;
+                        recoveryAppList.appendChild(item);
+                    });
+                }
+                
+                recoveryAppDialog.style.display = 'block';
+                recoveryAppPassword.value = '';
+            }
+            
+            // Get app name from ID
+            function getAppName(appId) {
+                const appNames = {
+                    'speedTestIcon': 'Speed Test',
+                    'appStoreIcon': 'App Store',
+                    'recentlyDeletedIcon': 'Recently Deleted',
+                    'speedtestNetIcon': 'Speedtest.net',
+                    'fastComIcon': 'Fast.com',
+                    'googleFiberIcon': 'Google Fiber'
+                };
+                return appNames[appId] || 'Unknown App';
+            }
+            
+            // Speed test app implementations
+            async function runSpeedtestNet() {
+                startSpeedtestNet.disabled = true;
+                const progressBar = document.getElementById('speedtestNetProgress');
+                const resultsDiv = document.getElementById('speedtestNetResults');
+                const downloadEl = document.getElementById('speedtestNetDownload');
+                const uploadEl = document.getElementById('speedtestNetUpload');
+                const pingEl = document.getElementById('speedtestNetPing');
+                
+                // Reset UI
+                progressBar.style.width = '0%';
+                resultsDiv.style.display = 'none';
+                
+                // Simulate ping test
+                progressBar.style.width = '20%';
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const ping = Math.floor(Math.random() * 50) + 10;
+                
+                // Simulate download test
+                progressBar.style.width = '60%';
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const download = (Math.random() * 200 + 50).toFixed(1);
+                
+                // Simulate upload test
+                progressBar.style.width = '90%';
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                const upload = (Math.random() * 50 + 10).toFixed(1);
+                
+                // Complete
+                progressBar.style.width = '100%';
+                
+                // Show results
+                downloadEl.textContent = `${download} Mbps`;
+                uploadEl.textContent = `${upload} Mbps`;
+                pingEl.textContent = `${ping} ms`;
+                resultsDiv.style.display = 'block';
+                
+                startSpeedtestNet.disabled = false;
+            }
+            
+            async function runFastCom() {
+                startFastCom.disabled = true;
+                const progressBar = document.getElementById('fastComProgress');
+                const resultsDiv = document.getElementById('fastComResults');
+                const downloadEl = document.getElementById('fastComDownload');
+                
+                // Reset UI
+                progressBar.style.width = '0%';
+                resultsDiv.style.display = 'none';
+                
+                // Simulate download test (Fast.com only tests download)
+                for (let i = 0; i <= 100; i += 5) {
+                    progressBar.style.width = `${i}%`;
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                const download = (Math.random() * 300 + 100).toFixed(1);
+                
+                // Show results
+                downloadEl.textContent = `${download} Mbps`;
+                resultsDiv.style.display = 'block';
+                
+                startFastCom.disabled = false;
+            }
+            
+            async function runGoogleFiber() {
+                startGoogleFiber.disabled = true;
+                const progressBar = document.getElementById('googleFiberProgress');
+                const resultsDiv = document.getElementById('googleFiberResults');
+                const downloadEl = document.getElementById('googleFiberDownload');
+                const uploadEl = document.getElementById('googleFiberUpload');
+                const latencyEl = document.getElementById('googleFiberLatency');
+                
+                // Reset UI
+                progressBar.style.width = '0%';
+                resultsDiv.style.display = 'none';
+                
+                // Simulate fiber speed test
+                progressBar.style.width = '30%';
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const latency = Math.floor(Math.random() * 10) + 2;
+                
+                progressBar.style.width = '70%';
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const download = (Math.random() * 900 + 100).toFixed(1);
+                
+                progressBar.style.width = '90%';
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                const upload = (Math.random() * 800 + 100).toFixed(1);
+                
+                // Complete
+                progressBar.style.width = '100%';
+                
+                // Show results
+                downloadEl.textContent = `${download} Mbps`;
+                uploadEl.textContent = `${upload} Mbps`;
+                latencyEl.textContent = `${latency} ms`;
+                resultsDiv.style.display = 'block';
+                
+                startGoogleFiber.disabled = false;
+            }
+            
+            // Main speed test function
+            async function startSpeedTest() {
+                if (testInProgress) return;
+                
+                testInProgress = true;
+                startTestBtn.disabled = true;
+                statusEl.textContent = "Initializing speed test...";
+                progressBar.style.width = '10%';
+                progressText.textContent = "Initializing...";
+                
+                try {
+                    // Get location and IP information first
+                    statusEl.textContent = "Acquiring location data...";
+                    progressBar.style.width = '20%';
+                    progressText.textContent = "Getting location...";
+                    
+                    const ipInfo = await getIPInfo();
+                    testResults.ip = ipInfo.ip;
+                    testResults.location = `${ipInfo.city}, ${ipInfo.region}, ${ipInfo.country}`;
+                    testResults.isp = ipInfo.org || 'Unknown ISP';
+                    
+                    // Update UI with location info
+                    ipAddressEl.textContent = testResults.ip;
+                    ispEl.textContent = testResults.isp;
+                    
+                    // Test ping
+                    statusEl.textContent = "Testing network latency...";
+                    progressBar.style.width = '30%';
+                    progressText.textContent = "Ping test...";
+                    testResults.ping = await testPing();
+                    pingEl.textContent = `${testResults.ping} ms`;
+                    
+                    // Test download speed
+                    statusEl.textContent = "Measuring download throughput...";
+                    progressBar.style.width = '50%';
+                    progressText.textContent = "Download test...";
+                    testResults.downloadSpeed = await testDownloadSpeed();
+                    downloadSpeedEl.textContent = `${testResults.downloadSpeed} Mbps`;
+                    
+                    // Test upload speed
+                    statusEl.textContent = "Measuring upload throughput...";
+                    progressBar.style.width = '80%';
+                    progressText.textContent = "Upload test...";
+                    testResults.uploadSpeed = await testUploadSpeed();
+                    uploadSpeedEl.textContent = `${testResults.uploadSpeed} Mbps`;
+                    
+                    // Complete
+                    progressBar.style.width = '100%';
+                    progressText.textContent = "Test complete";
+                    statusEl.textContent = "Speed test complete!";
+                    
+                    // Set test date
+                    testResults.testDate = new Date().toLocaleString();
+                    testDateEl.textContent = testResults.testDate;
+                    
+                    // Add to history
+                    testHistory.unshift({
+                        date: testResults.testDate,
+                        download: testResults.downloadSpeed,
+                        upload: testResults.uploadSpeed,
+                        ping: testResults.ping
+                    });
+                    
+                    // Keep only last 5 tests
+                    if (testHistory.length > 5) {
+                        testHistory = testHistory.slice(0, 5);
+                    }
+                    
+                    // Show results
+                    resultsEl.style.display = 'block';
+                    
+                    // Auto-save after test
+                    saveToStorage();
+                    
+                } catch (error) {
+                    console.error('Speed test error:', error);
+                    statusEl.textContent = "Test failed. Please try again.";
+                } finally {
+                    testInProgress = false;
+                    startTestBtn.disabled = false;
+                }
+            }
+            
+            // Get IP and location information
+            async function getIPInfo() {
+                try {
+                    const response = await fetch('https://ipapi.co/json/');
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('Error getting IP info:', error);
+                    // Fallback to a different service
+                    try {
+                        const response = await fetch('https://api.ipify.org?format=json');
+                        const data = await response.json();
+                        return {
+                            ip: data.ip,
+                            city: 'Unknown',
+                            region: 'Unknown',
+                            country: 'Unknown',
+                            org: 'Unknown ISP'
+                        };
+                    } catch (fallbackError) {
+                        return {
+                            ip: 'Unknown',
+                            city: 'Unknown',
+                            region: 'Unknown',
+                            country: 'Unknown',
+                            org: 'Unknown ISP'
+                        };
+                    }
+                }
+            }
+            
+            // Test ping by measuring response time to a server
+            async function testPing() {
+                const startTime = performance.now();
+                try {
+                    // Using a small request to measure latency
+                    await fetch('https://httpbin.org/delay/0', { 
+                        method: 'HEAD',
+                        cache: 'no-cache'
+                    });
+                    const endTime = performance.now();
+                    return Math.round(endTime - startTime);
+                } catch (error) {
+                    console.error('Ping test failed:', error);
+                    return 'N/A';
+                }
+            }
+            
+            // Test download speed by downloading a file of known size
+            async function testDownloadSpeed() {
+                const fileSizeInBytes = 500000; // 500KB test file
+                const startTime = performance.now();
+                
+                try {
+                    // Using a service that provides files of known size for speed testing
+                    const testUrl = `https://httpbin.org/bytes/${fileSizeInBytes}`;
+                    
+                    const response = await fetch(testUrl, { cache: 'no-cache' });
+                    await response.blob();
+                    
+                    const endTime = performance.now();
+                    const durationInSeconds = (endTime - startTime) / 1000;
+                    const bitsLoaded = fileSizeInBytes * 8;
+                    const speedMbps = (bitsLoaded / durationInSeconds / 1000000).toFixed(2);
+                    
+                    return speedMbps;
+                } catch (error) {
+                    console.error('Download test failed:', error);
+                    return 'N/A';
+                }
+            }
+            
+            // Test upload speed by uploading data
+            async function testUploadSpeed() {
+                const dataSizeInBytes = 200000; // 200KB test data
+                const testData = new Array(dataSizeInBytes).join('0');
+                const startTime = performance.now();
+                
+                try {
+                    // Using a service that accepts POST requests for upload testing
+                    const response = await fetch('https://httpbin.org/post', {
+                        method: 'POST',
+                        body: testData,
+                        headers: {
+                            'Content-Type': 'application/octet-stream'
+                        }
+                    });
+                    
+                    await response.json();
+                    
+                    const endTime = performance.now();
+                    const durationInSeconds = (endTime - startTime) / 1000;
+                    const bitsLoaded = dataSizeInBytes * 8;
+                    const speedMbps = (bitsLoaded / durationInSeconds / 1000000).toFixed(2);
+                    
+                    return speedMbps;
+                } catch (error) {
+                    console.error('Upload test failed:', error);
+                    return 'N/A';
+                }
+            }
+            
+            // Update history display
+            function updateHistoryDisplay() {
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+                
+                if (testHistory.length === 0) {
+                    historyList.innerHTML = '<p>No test history available.</p>';
+                    return;
+                }
+                
+                testHistory.forEach(test => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <strong>${test.date}</strong><br>
+                        Download: ${test.download} Mbps | Upload: ${test.upload} Mbps | Ping: ${test.ping} ms
+                    `;
+                    historyList.appendChild(item);
+                });
+            }
+            
+            // Update downloads list
+            function updateDownloadsList() {
+                downloadList.innerHTML = '';
+                
+                if (downloadedFiles.length === 0) {
+                    downloadList.innerHTML = '<p>No downloaded files.</p>';
+                    return;
+                }
+                
+                downloadedFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.innerHTML = `
+                        <div>
+                            <strong>${file.name}</strong><br>
+                            <span>${file.date}</span>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-action" onclick="shareFile(${index})">Share</button>
+                            <button class="file-action" onclick="deleteFile(${index})">Delete</button>
+                        </div>
+                    `;
+                    downloadList.appendChild(item);
+                });
+            }
+            
+            // Update deletion list
+            function updateDeletionList() {
+                deletionList.innerHTML = '';
+                
+                if (deletionHistory.length === 0) {
+                    deletionList.innerHTML = '<p>No deletion history.</p>';
+                    return;
+                }
+                
+                deletionHistory.forEach(item => {
+                    const deletionItem = document.createElement('div');
+                    deletionItem.className = 'deletion-item';
+                    deletionItem.innerHTML = `
+                        <div class="deletion-date">${item.date} - ${item.app}</div>
+                        <div class="deletion-reason">Reason: ${item.reason}</div>
+                    `;
+                    deletionList.appendChild(deletionItem);
+                });
+            }
+            
+            // Download results as a text file
+            function downloadResults() {
+                if (!testResults.downloadSpeed) return;
+                
+                const content = `
+Dem Internet Speed Test Results
+===============================
+
+Test Date: ${testResults.testDate}
+IP Address: ${testResults.ip}
+Location: ${testResults.location}
+ISP: ${testResults.isp}
+
+Download Speed: ${testResults.downloadSpeed} Mbps
+Upload Speed: ${testResults.uploadSpeed} Mbps
+Ping: ${testResults.ping} ms
+
+Thank you for using Dem Internet Speed Test!
+                `.trim();
+                
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const fileName = `dem_internet_speed_test_${new Date().toISOString().slice(0, 10)}.txt`;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Add to downloads list
+                downloadedFiles.unshift({
+                    name: fileName,
+                    date: new Date().toLocaleString(),
+                    content: content
+                });
+                
+                // Keep only last 10 downloads
+                if (downloadedFiles.length > 10) {
+                    downloadedFiles = downloadedFiles.slice(0, 10);
+                }
+                
+                statusEl.textContent = "Results saved to file.";
+                saveToStorage();
+            }
+            
+            // Share results
+            function shareResults() {
+                if (!testResults.downloadSpeed) return;
+                
+                statusEl.textContent = "Sharing results...";
+                
+                // In a real app, this would use the Web Share API
+                // For demo purposes, we'll simulate sharing
+                setTimeout(() => {
+                    statusEl.textContent = "Results shared successfully!";
+                }, 1500);
+                
+                saveToStorage();
+            }
+            
+            // Share file function (for global access)
+            window.shareFile = function(index) {
+                if (downloadedFiles[index]) {
+                    statusEl.textContent = `Sharing ${downloadedFiles[index].name}...`;
+                    setTimeout(() => {
+                        statusEl.textContent = "File shared successfully!";
+                        downloadsDialog.style.display = 'none';
+                    }, 1500);
+                }
+            };
+            
+            // Delete file function (for global access)
+            window.deleteFile = function(index) {
+                if (downloadedFiles[index]) {
+                    downloadedFiles.splice(index, 1);
+                    updateDownloadsList();
+                    saveToStorage();
+                }
+            };
+            
+            // Initialize the application
+            initializeFromStorage();
+        });
+    </script>
+</body>
+</html>
